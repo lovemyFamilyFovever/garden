@@ -104,9 +104,20 @@ const script = `(function(){
       if(label&&label.textContent.trim()===slug)label.textContent=z;
     });
   }
+  var explorerMO=null;
+  function watchExplorer(){
+    var root=document.querySelector(".explorer-content");
+    if(!root)return;
+    localizeExplorer();
+    if(explorerMO&&explorerMO._t===root)return;
+    if(explorerMO)explorerMO.disconnect();
+    explorerMO=new MutationObserver(function(){localizeExplorer()});
+    explorerMO.observe(root,{subtree:true,childList:true,characterData:true});
+    explorerMO._t=root;
+  }
   function run(){
     enhance(document.querySelector(".markdown-rendered"));
-    localizeExplorer();
+    watchExplorer();
   }
   run();
   document.addEventListener("nav",run);
