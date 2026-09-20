@@ -10,7 +10,6 @@ configuration:
     - private
     - templates
     - .obsidian
-    # 双保险：即使同步脚本失手，构建层也绝不渲染排除目录
     - 漫画
     - projects
     - 小说
@@ -122,7 +121,7 @@ plugins:
   - source: "@quartz-community/favicon"
     enabled: true
   - source: "@quartz-community/og-image"
-    enabled: false  # 语料含 🎯📌 等 emoji，字体缺字导致 emit 报错；待补字体后再开
+    enabled: false
   - source: "@quartz-community/cname"
     enabled: true
   - source: "@quartz-community/canvas-page"
@@ -206,8 +205,8 @@ plugins:
     enabled: true
     options:
       links:
-        GitHub: https://github.com/jackyzha0/quartz
-        Discord Community: https://discord.gg/cRFFHYye7t
+        源码: https://github.com/lovemyFamilyFovever/garden
+        GitHub: https://github.com/lovemyFamilyFovever
     layout:
       position: footer
       priority: 50
@@ -260,6 +259,13 @@ plugins:
       position: afterBody
       priority: 50
       display: all
+  - source: ./plugins/zhiku-typography
+    enabled: true
+    options: {}
+    order: 95
+    layout:
+      position: afterBody
+      priority: 999
 layout:
   groups:
     toolbar:

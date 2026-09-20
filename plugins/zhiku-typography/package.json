@@ -1,0 +1,32 @@
+{
+  "name": "zhiku-typography",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "知库阅读器排版约定移植：sec-card 分组、标题 hash 渐变条、难度徽章、四类提示框",
+  "main": "dist/index.js",
+  "exports": {
+    ".": "./dist/index.js",
+    "./components": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "node -e \"console.log('prebuilt, skip')\""
+  },
+  "quartz": {
+    "name": "zhiku-typography",
+    "displayName": "Zhiku Typography",
+    "category": "component",
+    "version": "1.0.0",
+    "quartzVersion": ">=5.0.0",
+    "dependencies": [],
+    "defaultOrder": 95,
+    "defaultEnabled": true,
+    "defaultOptions": {},
+    "components": {
+      "ZhikuTypography": {
+        "displayName": "Zhiku Typography",
+        "defaultPosition": "afterBody",
+        "defaultPriority": 999
+      }
+    }
+  }
+}

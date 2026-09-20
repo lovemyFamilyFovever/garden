@@ -1,0 +1,11 @@
+{
+  "version": "1.0.0",
+  "plugins": {
+    "zhiku-typography": {
+      "source": "./plugins/zhiku-typography",
+      "resolved": "./plugins/zhiku-typography",
+      "commit": "local",
+      "installedAt": "2026-09-20T15:03:42.785Z"
+    }
+  }
+}
