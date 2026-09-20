@@ -97,8 +97,11 @@ const script = `(function(){
     root.querySelectorAll("a[href]").forEach(function(a){
       var m=(a.getAttribute("href")||"").match(/\\/([^/]+)\\/?$/);
       if(!m)return;
-      var z=ZH[decodeURIComponent(m[1])];
-      if(z&&a.firstChild&&a.firstChild.nodeType===3)a.firstChild.nodeValue=z;
+      var slug=decodeURIComponent(m[1]);
+      var z=ZH[slug];
+      if(!z)return;
+      var label=a.querySelector(".folder-title");
+      if(label&&label.textContent.trim()===slug)label.textContent=z;
     });
   }
   function run(){
