@@ -138,7 +138,7 @@ plugins:
       position: left
       priority: 50
   - source: "@quartz-community/graph"
-    enabled: true
+    enabled: false  # 用户要求：去掉右上角关系图谱
     layout:
       position: right
       priority: 10
