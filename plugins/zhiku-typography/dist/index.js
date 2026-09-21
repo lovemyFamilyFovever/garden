@@ -94,14 +94,9 @@ const script = `(function(){
   function localizeExplorer(){
     var root=document.querySelector(".explorer-content");
     if(!root)return;
-    root.querySelectorAll("a[href]").forEach(function(a){
-      var m=(a.getAttribute("href")||"").match(/\\/([^/]+)\\/?$/);
-      if(!m)return;
-      var slug=decodeURIComponent(m[1]);
-      var z=ZH[slug];
-      if(!z)return;
-      var label=a.querySelector(".folder-title");
-      if(label&&label.textContent.trim()===slug)label.textContent=z;
+    root.querySelectorAll(".folder-title").forEach(function(s){
+      var z=ZH[s.textContent.trim()];
+      if(z)s.textContent=z;
     });
   }
   var explorerMO=null;
