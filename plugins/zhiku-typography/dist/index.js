@@ -9,8 +9,8 @@ const css = `
 /* ===== 布局与留白 ===== */
 .page{max-width:1500px}
 #quartz-body{gap:0}
-.left.sidebar{padding:1.2rem .9rem 1rem 1.4rem;border-right:1px solid var(--gray)}
-.right.sidebar{padding:1.2rem 1.4rem 1rem .9rem;border-left:1px solid var(--gray)}
+.left.sidebar{padding:1.2rem .9rem 1rem 1.4rem}
+.right.sidebar{padding:1.2rem 1.4rem 1rem .9rem}
 article{padding:.6rem 2.2rem 2rem}
 body.theme-light{background:#fff}
 
