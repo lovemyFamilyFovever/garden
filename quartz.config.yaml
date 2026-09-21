@@ -14,33 +14,33 @@ configuration:
     - projects
     - 小说
   theme:
-    fontOrigin: googleFonts
+    fontOrigin: local  # 国内墙掉 Google Fonts，排印由插件 CSS 的本地衬线栈接管
     cdnCaching: true
     typography:
       header: Schibsted Grotesk
       body: Source Sans Pro
       code: IBM Plex Mono
     colors:
-      lightMode:
-        light: "#faf8f8"
-        lightgray: "#e5e5e5"
-        gray: "#b8b8b8"
-        darkgray: "#4e4e4e"
-        dark: "#2b2b2b"
-        secondary: "#284b63"
-        tertiary: "#84a59d"
-        highlight: rgba(143, 159, 169, 0.15)
-        textHighlight: "#fff23688"
-      darkMode:
-        light: "#161618"
-        lightgray: "#393639"
-        gray: "#646464"
-        darkgray: "#d4d4d4"
-        dark: "#ebebec"
-        secondary: "#7b97aa"
-        tertiary: "#84a59d"
-        highlight: rgba(143, 159, 169, 0.15)
-        textHighlight: "#b3aa0288"
+      lightMode:  # 纸墨 A：白纸黑墨朱砂
+        light: "#ffffff"
+        lightgray: "#fbf7f0"
+        gray: "#d9d4cb"
+        darkgray: "#3c4046"
+        dark: "#14161a"
+        secondary: "#c8331f"
+        tertiary: "#2f4d6e"
+        highlight: rgba(200, 51, 31, 0.12)
+        textHighlight: "#ffe1cc"
+      darkMode:  # 夜航 B：墨蓝底亮朱砂
+        light: "#0e1116"
+        lightgray: "#161d28"
+        gray: "#2b3747"
+        darkgray: "#a9bdd4"
+        dark: "#e9edf3"
+        secondary: "#ff6b52"
+        tertiary: "#7fd4ff"
+        highlight: rgba(255, 107, 82, 0.18)
+        textHighlight: "#ffd9a066"
 plugins:
   - source: "@quartz-community/created-modified-date"
     enabled: true

@@ -1,44 +1,92 @@
 // 知库排版约定 → Quartz v5 本地插件（无构建步骤，直接交付 dist）
-// 规则源：knowledge/static/app.js::enhanceArticleDOM + style.css L455-487
-// 差异适配：正文容器 .markdown-rendered；Quartz 标题尾部自带 anchor 元素，徽章剥离只作用于最后一个文本节点
-// 2026-09-20 用户视觉反馈追加：宽屏边距、Consolas、白底卡片、细滚动条、explorer 中文映射
+// 主题「纸墨·夜航」= 方案A编辑部衬线排印 × 方案B墨蓝暗色，双主题由 Quartz 颜色变量驱动
+// sec-card 去盒改细规线大序号；提示框/徽章/表格走 --secondary 朱砂体系
 
 const css = `
-.markdown-rendered .sec-card{border:1px solid color-mix(in oklab,var(--gray),transparent 55%);border-radius:12px;padding:1.4rem 1.6rem;margin-bottom:1.6rem;background:#fff}
-.markdown-rendered h2{--bar-s:50%;--bar-l:89%;--bar-fg:#1f2937;padding:.7rem 1.1rem;border-radius:9px;border-left:4px solid var(--kb-acc);color:var(--bar-fg);background:linear-gradient(135deg,hsl(var(--gh,160) var(--bar-s) var(--bar-l)),hsl(var(--gh2,200) var(--bar-s) var(--bar-l)))}
-.markdown-rendered h3{display:flex;justify-content:space-between;align-items:center;gap:.6rem;flex-wrap:wrap;border-left:4px solid var(--kb-acc);padding-left:.8rem;color:var(--kb-acc)}
-.markdown-rendered .kb-badge{margin-left:auto;font-size:.72rem;font-weight:700;border:none;border-radius:20px;padding:.18rem .7rem;white-space:nowrap;font-variant-numeric:tabular-nums}
-.markdown-rendered .kb-badge.b{color:var(--kb-ok);background:color-mix(in oklab,var(--kb-ok),transparent 85%)}
-.markdown-rendered .kb-badge.m{color:var(--kb-warn);background:color-mix(in oklab,var(--kb-warn),transparent 85%)}
-.markdown-rendered .kb-badge.a{color:var(--kb-danger);background:color-mix(in oklab,var(--kb-danger),transparent 85%)}
-.markdown-rendered blockquote.kb-tip{border-left:4px solid var(--kb-info);background:color-mix(in oklab,var(--kb-info),transparent 90%)}
-.markdown-rendered blockquote.kb-warn{border-left:4px solid var(--kb-warn);background:color-mix(in oklab,var(--kb-warn),transparent 90%)}
-.markdown-rendered blockquote.kb-kp{border-left:4px solid var(--kb-acc);background:color-mix(in oklab,var(--kb-acc),transparent 90%)}
-.markdown-rendered blockquote.kb-fu{border-left:4px solid var(--kb-fu);background:color-mix(in oklab,var(--kb-fu),transparent 90%)}
-.markdown-rendered{--kb-ok:#16a34a;--kb-warn:#d97706;--kb-danger:#dc2626;--kb-info:#2563eb;--kb-fu:#7c3aed;--kb-acc:var(--secondary)}
-body.theme-dark .markdown-rendered{--kb-ok:#4ade80;--kb-warn:#fbbf24;--kb-danger:#f87171;--kb-info:#60a5fa;--kb-fu:#a78bfa}
-body.theme-dark .markdown-rendered h2{--bar-s:40%;--bar-l:82%}
-body.theme-dark .markdown-rendered .sec-card{background:color-mix(in oklab,var(--light),transparent 25%);border-color:color-mix(in oklab,var(--gray),transparent 60%)}
-footer > p:first-child{display:none}
+/* ===== 字体栈：本地衬线 + Consolas 点缀（不依赖 Google Fonts）===== */
+.markdown-rendered,.explorer-content,.toc,.page-title,.breadcrumb,.backlinks a{font-family:"Noto Serif SC","Source Han Serif SC","Songti SC","STZhongsong","SimSun",serif}
 
-/* ===== 视觉反馈批次 2026-09-20 ===== */
-/* 边距：宽屏放宽外框、收紧栏间距、正文左右留白 */
-.page{max-width:1720px}
+/* ===== 布局与留白 ===== */
+.page{max-width:1500px}
 #quartz-body{gap:0}
-.left.sidebar{padding:1rem .8rem 1rem 1.2rem}
-.right.sidebar{padding:1rem 1.2rem 1rem .8rem}
-article{padding:.5rem 1.8rem 1rem}
-/* 白底：页面与卡片都去灰 */
+.left.sidebar{padding:1.2rem .9rem 1rem 1.4rem;border-right:1px solid var(--gray)}
+.right.sidebar{padding:1.2rem 1.4rem 1rem .9rem;border-left:1px solid var(--gray)}
+article{padding:.6rem 2.2rem 2rem}
 body.theme-light{background:#fff}
-/* 正文字体：与本地阅读器同款 Consolas 栈 */
-.markdown-rendered{font-family:Consolas,"梦源黑体 CN","Microsoft YaHei",sans-serif}
-/* 滚动条：4px 细条、透明轨道；面板隐藏横向条 */
+
+/* ===== 正文排印 ===== */
+.markdown-rendered{color:var(--dark);font-size:16.5px;line-height:1.95;counter-reset:kbsec}
+.markdown-rendered h1{font-size:2.25rem;font-weight:900;letter-spacing:.03em;line-height:1.4;border-bottom:3px double var(--gray);padding-bottom:.9rem;margin-bottom:1.6rem}
+.markdown-rendered p{margin:.9rem 0;color:var(--dark)}
+.markdown-rendered strong{color:var(--secondary);font-weight:900}
+.markdown-rendered a{color:var(--dark);border-bottom:1px solid color-mix(in oklab,var(--secondary),transparent 45%);transition:color .2s}
+.markdown-rendered a:hover{color:var(--secondary)}
+.markdown-rendered li{margin:.4rem 0}
+.markdown-rendered li::marker{color:var(--secondary)}
+.markdown-rendered hr{border:none;border-top:1px solid var(--gray);margin:1.6rem 0}
+
+/* ===== 章节：大衬线序号 + 规线（A 的招牌，替代旧渐变条）===== */
+.markdown-rendered .sec-card{background:transparent;border:none;border-radius:0;padding:0 0 2.4rem;margin:0}
+.markdown-rendered .sec-card h2{counter-increment:kbsec;display:flex;align-items:baseline;gap:1.1rem;font-size:1.32rem;font-weight:900;letter-spacing:.05em;color:var(--dark);background:none;border:none;border-bottom:2px solid var(--dark);border-radius:0;padding:0 0 .45rem;margin:0 0 1.3rem}
+.markdown-rendered .sec-card h2::before{content:counter(kbsec,decimal-leading-zero);font-family:Consolas,"JetBrains Mono",monospace;font-size:1.9rem;font-weight:700;color:var(--secondary);letter-spacing:-.03em;line-height:1}
+.markdown-rendered h3{display:flex;justify-content:space-between;align-items:center;gap:.6rem;flex-wrap:wrap;border-left:none;padding-left:0;color:var(--dark);font-weight:900;letter-spacing:.03em}
+.markdown-rendered h4{color:var(--darkgray)}
+
+/* ===== 难度徽章（朱砂体系微调，等宽小标）===== */
+.markdown-rendered .kb-badge{margin-left:auto;font-family:Consolas,"JetBrains Mono",monospace;font-size:.7rem;font-weight:700;border:none;border-radius:3px;padding:.15rem .6rem;white-space:nowrap;letter-spacing:.08em}
+.markdown-rendered .kb-badge.b{color:#1a7f4e;background:color-mix(in oklab,#1a7f4e,transparent 86%)}
+.markdown-rendered .kb-badge.m{color:#b8860b;background:color-mix(in oklab,#b8860b,transparent 86%)}
+.markdown-rendered .kb-badge.a{color:var(--secondary);background:color-mix(in oklab,var(--secondary),transparent 86%)}
+body.theme-dark .markdown-rendered .kb-badge.b{color:#5ce0a0;background:rgba(92,224,160,.12)}
+body.theme-dark .markdown-rendered .kb-badge.m{color:#f5c343;background:rgba(245,195,67,.12)}
+
+/* ===== 提示框：纸墨眉批 ===== */
+.markdown-rendered blockquote{margin:1.1rem 0;padding:.85rem 1.2rem;border:1px solid var(--gray);border-left:3px solid var(--secondary);border-radius:2px;background:var(--lightgray);color:var(--dark);font-size:.97rem}
+.markdown-rendered blockquote.kb-tip{border-left-color:var(--tertiary)}
+.markdown-rendered blockquote.kb-warn{border-left-color:#d40000;background:color-mix(in oklab,#d40000,var(--light),96%)}
+body.theme-dark .markdown-rendered blockquote.kb-warn{background:rgba(255,90,90,.06)}
+.markdown-rendered blockquote.kb-kp{position:relative;padding-left:2.8rem;border-left:none;border-color:color-mix(in oklab,var(--secondary),transparent 55%)}
+.markdown-rendered blockquote.kb-kp::before{content:"〝";position:absolute;left:.9rem;top:.15rem;font-size:2.4rem;line-height:1;color:var(--secondary);font-family:Georgia,serif}
+.markdown-rendered blockquote.kb-fu{background:transparent;border-style:dashed;border-left:3px dashed var(--darkgray);color:var(--darkgray)}
+
+/* ===== 表格：报头规线 ===== */
+.markdown-rendered table{border-collapse:collapse;width:100%;margin:1.3rem 0;font-size:.93rem}
+.markdown-rendered th{border-top:2px solid var(--dark);border-bottom:1px solid var(--dark);padding:.55rem .8rem;text-align:left;font-size:.78rem;letter-spacing:.15em;color:var(--darkgray)}
+.markdown-rendered td{padding:.55rem .8rem;border-bottom:1px solid var(--gray)}
+.markdown-rendered tr:last-child td{border-bottom:2px solid var(--dark)}
+
+/* ===== 代码块：等宽 + 细边 ===== */
+.markdown-rendered pre{border:1px solid var(--gray);border-radius:3px}
+.markdown-rendered code{font-family:Consolas,"JetBrains Mono",monospace}
+
+/* ===== 侧栏：树与目录的纸墨化 ===== */
+.explorer-content{font-size:.86rem}
+.explorer-content .folder-title,.explorer-content li a{color:var(--darkgray)}
+.explorer-content a:hover,.explorer-content button:hover .folder-title{color:var(--dark)}
+.toc-content.overflow>li>a{color:var(--darkgray);border-bottom:1px dotted var(--gray);opacity:.9}
+.toc-content.overflow>li>a.in-view{color:var(--secondary);opacity:1}
+.page-title{letter-spacing:.12em;font-weight:900}
+
+/* ===== 滚动条：4px 细条 ===== */
 ::-webkit-scrollbar{width:4px;height:4px}
 ::-webkit-scrollbar-track{background:transparent}
-::-webkit-scrollbar-thumb{background:color-mix(in oklab,var(--gray),transparent 50%);border-radius:2px}
-::-webkit-scrollbar-thumb:hover{background:color-mix(in oklab,var(--gray),transparent 25%)}
-*{scrollbar-width:thin;scrollbar-color:color-mix(in oklab,var(--gray),transparent 50%) transparent}
+::-webkit-scrollbar-thumb{background:color-mix(in oklab,var(--gray),transparent 30%);border-radius:2px}
+*{scrollbar-width:thin;scrollbar-color:color-mix(in oklab,var(--gray),transparent 30%) transparent}
 .toc-content,.explorer-content{overflow-x:hidden}
+
+/* ===== 页脚 ===== */
+footer > p:first-child{display:none}
+footer ul li a{font-family:Consolas,monospace;font-size:.72rem;letter-spacing:.15em;color:var(--darkgray)}
+footer ul li a:hover{color:var(--secondary)}
+
+/* ===== 移动端 ===== */
+@media (max-width:880px){
+  article{padding:.4rem 1.1rem 2rem}
+  .markdown-rendered h1{font-size:1.7rem}
+  .markdown-rendered .sec-card h2{font-size:1.15rem;gap:.8rem}
+  .markdown-rendered .sec-card h2::before{font-size:1.4rem}
+  .left.sidebar,.right.sidebar{border:none}
+}
 `;
 
 const script = `(function(){
