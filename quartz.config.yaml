@@ -134,6 +134,8 @@ plugins:
     enabled: true
   - source: "@quartz-community/explorer"
     enabled: true
+    options:
+      folderClickBehavior: collapse  # 点文件夹原地展开/收起（上游默认 link=跳转，用户要求改回树交互）
     layout:
       position: left
       priority: 50
