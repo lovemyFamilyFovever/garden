@@ -1,0 +1,24 @@
+{
+  "name": "zhiku-pwa",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "知库公开站 PWA：manifest + service worker（离线已读页 / 手动离线全站）+ 安装入口",
+  "main": "dist/index.js",
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "node -e \"console.log('prebuilt, skip')\""
+  },
+  "quartz": {
+    "name": "zhiku-pwa",
+    "displayName": "Zhiku PWA",
+    "category": "emitter",
+    "version": "1.0.0",
+    "quartzVersion": ">=5.0.0",
+    "dependencies": [],
+    "defaultOrder": 96,
+    "defaultEnabled": true,
+    "defaultOptions": {}
+  }
+}

@@ -146,10 +146,11 @@ const mobileCss = `
 
 
   /* --- 章节 sheet：内容由脚本从正文 h2/h3 现建（Quartz 移动端正栏根本不渲染 TOC） --- */
-  .kb-sheet-toc{position:fixed;left:0;right:0;bottom:0;z-index:62;max-height:64vh;overflow:hidden;
+  .kb-sheet-toc{position:fixed;left:0;right:0;bottom:calc(var(--kb-tab) + env(safe-area-inset-bottom));
+    z-index:62;max-height:60vh;overflow:hidden;
     display:flex;flex-direction:column;background:var(--light);border-top:1px solid var(--gray);
-    border-radius:16px 16px 0 0;padding:0 18px calc(env(safe-area-inset-bottom) + 14px);
-    transform:translateY(101%);transition:transform .36s cubic-bezier(.2,.9,.2,1);
+    border-radius:16px 16px 0 0;padding:0 18px 16px;
+    transform:translateY(calc(100% + var(--kb-tab) + env(safe-area-inset-bottom)));transition:transform .36s cubic-bezier(.2,.9,.2,1);
     box-shadow:0 -16px 40px rgba(10,12,15,.18)}
   body[data-kb-toc="1"] .kb-sheet-toc{transform:none}
   .kb-grab{width:38px;height:4px;border-radius:2px;background:var(--gray);margin:9px auto 4px;flex:none}
@@ -163,9 +164,10 @@ const mobileCss = `
 
 
   /* --- 阅读面板 --- */
-  .kb-sheet-read{position:fixed;left:0;right:0;bottom:0;z-index:62;overflow:hidden;
+  .kb-sheet-read{position:fixed;left:0;right:0;bottom:calc(var(--kb-tab) + env(safe-area-inset-bottom));
+    z-index:62;overflow-y:auto;max-height:70vh;
     background:var(--light);border-top:1px solid var(--gray);border-radius:16px 16px 0 0;
-    padding:0 18px calc(env(safe-area-inset-bottom) + 18px);transform:translateY(101%);
+    padding:0 18px 18px;transform:translateY(calc(100% + var(--kb-tab) + env(safe-area-inset-bottom)));
     transition:transform .36s cubic-bezier(.2,.9,.2,1);box-shadow:0 -16px 40px rgba(10,12,15,.18)}
   body[data-kb-read="1"] .kb-sheet-read{transform:none}
   .kb-sheet-read h4{margin:0 0 9px;font-size:.7rem;letter-spacing:.2em;color:var(--darkgray)}

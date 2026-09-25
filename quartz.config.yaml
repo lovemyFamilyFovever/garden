@@ -268,6 +268,10 @@ plugins:
     layout:
       position: afterBody
       priority: 999
+  - source: ./plugins/zhiku-pwa
+    enabled: true
+    options: {}
+    order: 96
 layout:
   groups:
     toolbar:
