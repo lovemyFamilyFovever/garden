@@ -15,10 +15,14 @@ async function writeOut(ctx, rel, content) {
   return to
 }
 
-// 页面深度 → 回到站点根的相对前缀（Quartz 的 Head 处理 static/icon.png 也是这个思路）
-function rootOf(slug) {
-  if (!slug || slug === "index") return "."
-  return "../".repeat(slug.split("/").length)
+// head 里的链接一律用「/garden/...」这种带 base 前缀的绝对路径。
+// 别按页面深度算 ../：Quartz 的 index 页是 <slug>/index.html、普通页是 <slug>.html，
+// 两种深度不一样（实测 articles/ai/study.html 的 favicon 是 ../../ 而不是 ../../../），
+// 算错一层 manifest 就直接 404、装不上。
+function basePrefix(ctx) {
+  const baseUrl = ctx.cfg.configuration.baseUrl
+  if (ctx.argv.serve || !baseUrl) return ""
+  return new URL(`https://${baseUrl}`).pathname.replace(/\/+$/, "")
 }
 
 const ICON_SRC = path.join("quartz", "static", "icon.png")
@@ -355,16 +359,13 @@ const ZhikuPwa = () => ({
   externalResources(ctx) {
     const colors = ctx.cfg.configuration.theme?.colors ?? {}
     const light = colors.lightMode?.light ?? "#ffffff"
+    const pre = basePrefix(ctx)
+    const abs = (p) => (pre + "/" + p).replace(/\/{2,}/g, "/")
     return {
       js: [{ loadTime: "afterDOMReady", contentType: "inline", script: headScript() }],
       additionalHead: [
-        (fileData) =>
-          h("link", { rel: "manifest", href: join(rootOf(fileData.slug), "static/manifest.json") }),
-        (fileData) =>
-          h("link", {
-            rel: "apple-touch-icon",
-            href: join(rootOf(fileData.slug), "static/pwa/apple-touch-icon.png"),
-          }),
+        h("link", { rel: "manifest", href: abs("manifest.json") }),
+        h("link", { rel: "apple-touch-icon", href: abs("static/pwa/apple-touch-icon.png") }),
         h("meta", { name: "application-name", content: "知库" }),
         h("meta", { name: "mobile-web-app-capable", content: "yes" }),
         h("meta", { name: "apple-mobile-web-app-capable", content: "yes" }),
@@ -388,9 +389,9 @@ const ZhikuPwa = () => ({
     out.push(await writeOut(ctx, join("static", "pwa", "icon-maskable-192.png"), icons.maskable192))
     out.push(await writeOut(ctx, join("static", "pwa", "icon-maskable-512.png"), icons.maskable))
     out.push(await writeOut(ctx, join("static", "pwa", "apple-touch-icon.png"), icons.apple))
-    out.push(await writeOut(ctx, join("static", "manifest.json"), manifestJson()))
+    out.push(await writeOut(ctx, "manifest.json", manifestJson()))
     out.push(await writeOut(ctx, "offline.html", OFFLINE_HTML))
-    out.push(await writeOut(ctx, "pwa-urls.json", JSON.stringify(slugs.concat(["static/manifest.json"]))))
+    out.push(await writeOut(ctx, "pwa-urls.json", JSON.stringify(slugs.concat(["manifest.json"]))))
     out.push(await writeOut(ctx, "sw.js", swSource("kb" + Date.now().toString(36))))
     return out
   },
