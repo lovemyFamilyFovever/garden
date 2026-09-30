@@ -553,6 +553,13 @@ const deskCss = `
    目标 = 主仓 workbench：全宽顶栏 + 280/1fr/264 三栏 + 左栏折叠 + 底部状态栏。
    正文排版的"大序号细规线"是站上已定稿的设计，不在这次里回退成主仓的 hash 渐变条。 ============ */
 @media (min-width:821px){
+  :root{--kb-bar:53px;--kb-st:24px}
+  /* Quartz 的两侧栏是 position:sticky;top:0;height:100vh，会把全宽顶栏和右栏页签条
+     一起盖在底下（实测页签条量到 y=14，正压在 53px 的顶栏下面）。
+     顶栏占了多高，两侧就得让出多高，底部再给状态栏留位。 */
+  .left.sidebar,.right.sidebar{top:calc(var(--kb-bar) + 8px)!important;
+    height:calc(100vh - var(--kb-bar) - var(--kb-st) - 24px)!important;
+    max-height:none!important}
   /* Quartz 默认 320/auto/320，且它的规则是 .page > #quartz-body（特异性更高、加载更靠后），
      插件 CSS 是第 6/21 个 stylesheet，同特异性会输 → 这里只能 !important 顶。 */
   #quartz-body{display:grid!important;grid-template-columns:280px minmax(0,1fr) 264px!important;
@@ -576,6 +583,14 @@ const deskCss = `
      搜索浮层 .search-container 就住在它里面，父级无盒子浮层会塌成 0×0。
      挪出视口最安全：浮层是 position:fixed，不受这个偏移牵连。 */
   .left.sidebar .flex-component .search{position:absolute;left:-9999px}
+  /* 域色点：颜色公式跟主仓 style.css:116/132 一致（明 oklch 58% .10 / 暗 70% .14），
+     hue 由脚本按 taxonomy 数据写在节点的 --dh 上 */
+  .explorer-content .folder-title,.explorer-content .nav-file-title{display:flex;
+    align-items:center;gap:6px}
+  .kb-dh{width:8px;height:8px;border-radius:50%;flex:none;display:inline-block;
+    background:oklch(58% .1 var(--dh,158))}
+  body.theme-dark .kb-dh{background:oklch(70% .14 var(--dh,158))}
+  body[data-slug="index"] .markdown-rendered>ul>li>a.kb-hued{display:flex;align-items:center;gap:8px}
   /* 顶栏已经有的控件不再在左栏重复一遍。.search-button 可以藏，
      但它的祖先 .search / .flex-component 绝不能 display:none——搜索浮层住在里面会塌成 0×0。 */
   .left.sidebar>.page-title,.flex-component .search-button,.flex-component .darkmode,
@@ -708,8 +723,45 @@ const deskScript = `
     var on=b.getAttribute(name)==='1';
     if(on)b.removeAttribute(name);else b.setAttribute(name,'1');return !on}
   var PANE=[['toc','目录'],['tags','标签'],['backlinks','双链']];
+  /* 域色点：hue 的权威是主仓 content/_meta/taxonomy.json，
+     publish_site.py 把它导成 static/zhiku-taxonomy.json 随站发布；
+     插件运行时读这份**数据**贴到节点上，CSS 里不抄域名清单（不变量 5）。 */
+  var HUES=undefined;
+  function segOf(href){
+    var u;try{u=new URL(href,location.href).pathname}catch(e){return ''}
+    var r=root();if(u.indexOf(r)===0)u=u.slice(r.length);
+    return u.split('/')[0]||''}
+  function dot(holder){
+    if(!holder)return;
+    for(var i=0;i<holder.children.length;i++){
+      if(holder.children[i].className==='kb-dh')return}
+    holder.insertBefore(el('i','kb-dh'),holder.firstChild)}
+  function paintHues(){
+    if(!HUES)return;
+    [].slice.call(document.querySelectorAll('.explorer-content>ul>li')).forEach(function(li){
+      if(li.classList.contains('overflow-end')||li.dataset.kbHue)return;
+      var a=li.querySelector('a[href]');if(!a)return;
+      var h=HUES[segOf(a.getAttribute('href'))];
+      if(h===undefined)return;
+      li.dataset.kbHue=h;li.style.setProperty('--dh',h);
+      dot(li.querySelector('.folder-title')||li.querySelector('.nav-file-title'))});
+    [].slice.call(document.querySelectorAll(
+      'body[data-slug="index"] .markdown-rendered>ul>li>a[href]')).forEach(function(a){
+      if(a.dataset.kbHue)return;
+      var h=HUES[segOf(a.getAttribute('href'))];
+      if(h===undefined)return;
+      a.dataset.kbHue=h;a.style.setProperty('--dh',h);a.classList.add('kb-hued');
+      dot(a)})}
+  function loadHues(){
+    if(HUES){paintHues();return}
+    fetch(root()+'static/zhiku-taxonomy.json').then(function(r){
+      return r.ok?r.json():{}}).then(function(j){HUES=j;paintHues()})
+      .catch(function(){HUES={}})}
   function tabsify(){
     var rail=q('.right.sidebar');if(!rail)return;
+    /* build() 会跑两次（首次加载 + Quartz 的 nav 事件），页签条住在右栏里、
+       不在 purge 范围内，不守一下就会叠两条 */
+    if(rail.querySelector('.kb-rtabs'))return;
     var kids=[].slice.call(rail.children).filter(function(c){
       var cl=' '+c.className+' ';
       for(var i=0;i<PANE.length;i++){if(cl.indexOf(' '+PANE[i][0]+' ')>=0)return true}
@@ -802,6 +854,9 @@ const deskScript = `
     document.body.appendChild(st);
     syncStatus();syncPressed(bar);
     tabsify();
+    loadHues();
+    /* explorer 的树是运行时从 <template> 建的，比本脚本晚到，所以补三次重绘 */
+    [400,1200,2400].forEach(function(ms){setTimeout(paintHues,ms)});
     wire();
   }
   /* 监听只接一次：SPA 换页不重建 document，闭包里存 DOM 会越攒越多，
