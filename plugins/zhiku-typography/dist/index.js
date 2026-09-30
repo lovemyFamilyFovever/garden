@@ -658,6 +658,17 @@ const deskCss = `
     border-radius:7px;font-size:.8rem;color:var(--darkgray);text-decoration:none}
   .right.sidebar .tags li a:hover{color:var(--secondary);border-color:var(--secondary)}
 
+  /* 搜索浮层的域筛选条（对齐主仓搜索浮层的范围 chip） */
+  .kb-schips{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 14px}
+  .kb-schip{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;
+    border:1px solid var(--gray);border-radius:999px;background:var(--light);color:var(--darkgray);
+    font-family:inherit;font-size:.8rem;letter-spacing:.03em;cursor:pointer;
+    transition:color .16s,border-color .16s,background .16s}
+  .kb-schip:hover{color:var(--dark)}
+  .kb-schip[aria-pressed="true"]{color:var(--secondary);border-color:var(--secondary);
+    background:color-mix(in oklab,var(--secondary),transparent 92%)}
+  .search-container .result-card[hidden]{display:none}
+
   #kb-status{position:fixed;left:0;right:0;bottom:0;z-index:45;display:flex;align-items:center;
     gap:14px;height:24px;padding:0 14px;border-top:1px solid var(--gray);background:var(--light);
     font-family:Consolas,"JetBrains Mono",monospace;font-size:.68rem;letter-spacing:.05em;
@@ -702,6 +713,7 @@ const deskScript = `
     var sc=q('.search-container');
     if(!sc){var x=q('.search-button');if(x)x.click();return}
     sc.classList.add('active');
+    chips();
     var i=sc.querySelector('.search-bar');if(i)setTimeout(function(){i.focus()},60)}
   function closeSearch(){var sc=q('.search-container');if(sc)sc.classList.remove('active')}
   function treeLinks(){
@@ -727,6 +739,7 @@ const deskScript = `
      publish_site.py 把它导成 static/zhiku-taxonomy.json 随站发布；
      插件运行时读这份**数据**贴到节点上，CSS 里不抄域名清单（不变量 5）。 */
   var HUES=undefined;
+  var DOMAINS=[],segSel='*';
   function segOf(href){
     var u;try{u=new URL(href,location.href).pathname}catch(e){return ''}
     var r=root();if(u.indexOf(r)===0)u=u.slice(r.length);
@@ -738,13 +751,18 @@ const deskScript = `
     holder.insertBefore(el('i','kb-dh'),holder.firstChild)}
   function paintHues(){
     if(!HUES)return;
+    DOMAINS=[];
     [].slice.call(document.querySelectorAll('.explorer-content>ul>li')).forEach(function(li){
-      if(li.classList.contains('overflow-end')||li.dataset.kbHue)return;
+      if(li.classList.contains('overflow-end'))return;
       var a=li.querySelector('a[href]');if(!a)return;
-      var h=HUES[segOf(a.getAttribute('href'))];
+      var seg=segOf(a.getAttribute('href'));
+      var h=HUES[seg];
+      var t=li.querySelector('.folder-title')||li.querySelector('.nav-file-title');
+      if(seg)DOMAINS.push({seg:seg,label:(t&&t.textContent.trim())||seg,hue:h===undefined?'':h});
+      if(li.dataset.kbHue)return;
       if(h===undefined)return;
       li.dataset.kbHue=h;li.style.setProperty('--dh',h);
-      dot(li.querySelector('.folder-title')||li.querySelector('.nav-file-title'))});
+      dot(t)});
     [].slice.call(document.querySelectorAll(
       'body[data-slug="index"] .markdown-rendered>ul>li>a[href]')).forEach(function(a){
       if(a.dataset.kbHue)return;
@@ -757,6 +775,32 @@ const deskScript = `
     fetch(root()+'static/zhiku-taxonomy.json').then(function(r){
       return r.ok?r.json():{}}).then(function(j){HUES=j;paintHues()})
       .catch(function(){HUES={}})}
+  /* 搜索的域筛选：FlexSearch 的结果卡片 id 就是 slug，按第一段过滤即可，
+     不需要为每个域预生成子索引。域名与色相都来自已渲染的分类树，不抄清单。 */
+  function chips(){
+    var sc=q('.search-container');if(!sc)return;
+    var layout=sc.querySelector('.search-layout'),space=sc.querySelector('.search-space');
+    if(!layout||!space)return;
+    if(!DOMAINS.length)paintHues();
+    var row=sc.querySelector('.kb-schips');
+    if(!row){row=el('div','kb-schips');space.insertBefore(row,layout)}
+    if(!row.childElementCount){
+      var mk=function(seg,label,hue){
+        var b=el('button','kb-schip');b.type='button';b.dataset.seg=seg;
+        if(hue!==''){b.style.setProperty('--dh',hue);b.appendChild(el('i','kb-dh'))}
+        b.appendChild(document.createTextNode(label));
+        b.addEventListener('click',function(){segSel=seg;paintChips();filterHits()});
+        row.appendChild(b)};
+      mk('*','全部','');
+      DOMAINS.forEach(function(d){mk(d.seg,d.label,d.hue)})}
+    paintChips();filterHits()}
+  function paintChips(){[].slice.call(document.querySelectorAll('.kb-schip')).forEach(function(b){
+    b.setAttribute('aria-pressed',b.dataset.seg===segSel?'true':'false')})}
+  function filterHits(){
+    var sc=q('.search-container');if(!sc)return;
+    [].slice.call(sc.querySelectorAll('.result-card')).forEach(function(c){
+      var seg=String(c.id||'').split('/')[0];
+      c.hidden=(segSel!=='*'&&seg!==segSel)})}
   function tabsify(){
     var rail=q('.right.sidebar');if(!rail)return;
     /* build() 会跑两次（首次加载 + Quartz 的 nav 事件），页签条住在右栏里、
@@ -879,7 +923,10 @@ const deskScript = `
     new MutationObserver(function(){
       var bar=document.getElementById('kb-deskbar');
       if(bar)syncPressed(bar);syncStatus()}).observe(document.body,
-      {attributes:true,attributeFilter:['class','data-kb-fold','data-kb-immersive']})}
+      {attributes:true,attributeFilter:['class','data-kb-fold','data-kb-immersive']});
+    /* 结果卡片是 FlexSearch 异步塞进 .search-layout 的，渲染完再套一次当前筛选 */
+    var lay=document.querySelector('.search-layout');
+    if(lay)new MutationObserver(filterHits).observe(lay,{childList:true,subtree:true})}
   function run(){if(M.matches)build();else purge()}
   run();
   document.addEventListener('nav',run);
