@@ -168,10 +168,10 @@ plugins:
       position: beforeBody
       priority: 20
   - source: "@quartz-community/tag-list"
-    enabled: false
+    enabled: true  # 档2：右栏页签要有「标签」页，主仓右栏四页签里可只读呈现的两项之一
     layout:
-      position: beforeBody
-      priority: 30
+      position: right
+      priority: 40
   - source: "@quartz-community/page-title"
     enabled: true
     layout:

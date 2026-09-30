@@ -622,6 +622,27 @@ const deskCss = `
   body[data-kb-immersive="1"] #kb-deskbar{opacity:.4}
   body[data-kb-immersive="1"] #kb-deskbar:hover{opacity:1}
 
+  /* 右栏页签化：主仓右栏是「目录/标签/备注/双链」四页签，
+     站上只有前两项和入站双链能只读呈现（备注要 /api/note，按口径整块不做）。 */
+  .right.sidebar{display:flex;flex-direction:column;gap:0}
+  .kb-rtabs{display:flex;gap:2px;flex:none;border-bottom:1px solid var(--gray);
+    padding-bottom:7px;margin-bottom:10px}
+  .kb-rtab{flex:1;display:flex;align-items:center;justify-content:center;gap:5px;padding:6px 2px;
+    border:0;border-radius:8px;background:none;color:var(--darkgray);font-family:inherit;
+    font-size:.82rem;letter-spacing:.05em;cursor:pointer;transition:color .16s,background .16s}
+  .kb-rtab:hover{color:var(--dark);background:var(--lightgray)}
+  .kb-rtab[aria-selected="true"]{color:var(--secondary);
+    background:color-mix(in oklab,var(--secondary),transparent 90%)}
+  .kb-rtab .rt-n{font-family:Consolas,"JetBrains Mono",monospace;font-size:.7rem;opacity:.75}
+  .right.sidebar .kb-rpane[hidden]{display:none!important}
+  /* 页签已经写了「目录」，TOC 自带的那个同名表头就是重复 */
+  .right.sidebar .toc>.toc-header{display:none}
+  .right.sidebar .toc{flex:1;min-height:0;overflow-y:auto}
+  .right.sidebar .tags{margin:0;gap:6px}
+  .right.sidebar .tags li a{display:inline-block;padding:3px 9px;border:1px solid var(--gray);
+    border-radius:7px;font-size:.8rem;color:var(--darkgray);text-decoration:none}
+  .right.sidebar .tags li a:hover{color:var(--secondary);border-color:var(--secondary)}
+
   #kb-status{position:fixed;left:0;right:0;bottom:0;z-index:45;display:flex;align-items:center;
     gap:14px;height:24px;padding:0 14px;border-top:1px solid var(--gray);background:var(--light);
     font-family:Consolas,"JetBrains Mono",monospace;font-size:.68rem;letter-spacing:.05em;
@@ -686,6 +707,31 @@ const deskScript = `
   function toggleAttr(name){var b=document.body;
     var on=b.getAttribute(name)==='1';
     if(on)b.removeAttribute(name);else b.setAttribute(name,'1');return !on}
+  var PANE=[['toc','目录'],['tags','标签'],['backlinks','双链']];
+  function tabsify(){
+    var rail=q('.right.sidebar');if(!rail)return;
+    var kids=[].slice.call(rail.children).filter(function(c){
+      var cl=' '+c.className+' ';
+      for(var i=0;i<PANE.length;i++){if(cl.indexOf(' '+PANE[i][0]+' ')>=0)return true}
+      return false});
+    if(kids.length<2)return;
+    var strip=el('div','kb-rtabs');strip.setAttribute('role','tablist');
+    var btns=[];
+    kids.forEach(function(c){
+      var key='',label='信息';
+      PANE.forEach(function(p){if(c.classList.contains(p[0])){key=p[0];label=p[1]}});
+      var n=c.querySelectorAll('li').length;
+      var b=el('button','kb-rtab');b.type='button';b.setAttribute('role','tab');
+      b.setAttribute('aria-selected','false');
+      b.appendChild(document.createTextNode(label));
+      if(n)b.appendChild(el('span','rt-n',String(n)));
+      b.addEventListener('click',function(){pick(kids.indexOf(c))});
+      strip.appendChild(b);btns.push(b);c.classList.add('kb-rpane')});
+    function pick(i){
+      kids.forEach(function(c,k){c.hidden=(k!==i)});
+      btns.forEach(function(b,k){b.setAttribute('aria-selected',k===i?'true':'false')})}
+    rail.insertBefore(strip,rail.firstChild);
+    pick(0)}
   function help(open){
     var box=document.getElementById('kb-help');
     if(!open){if(box)box.remove();return}
@@ -755,6 +801,7 @@ const deskScript = `
       '<span class="st-r"><span class="st-theme"></span> · ? 快捷键</span>';
     document.body.appendChild(st);
     syncStatus();syncPressed(bar);
+    tabsify();
     wire();
   }
   /* 监听只接一次：SPA 换页不重建 document，闭包里存 DOM 会越攒越多，
