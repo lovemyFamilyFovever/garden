@@ -548,11 +548,249 @@ const mobileScript = `
 `;
 
 
+const deskCss = `
+/* ============ 桌面骨架对齐（只在 ≥821px 生效，与 max-width:820px 那套移动壳互斥）
+   目标 = 主仓 workbench：全宽顶栏 + 280/1fr/264 三栏 + 左栏折叠 + 底部状态栏。
+   正文排版的"大序号细规线"是站上已定稿的设计，不在这次里回退成主仓的 hash 渐变条。 ============ */
+@media (min-width:821px){
+  /* Quartz 默认 320/auto/320，且它的规则是 .page > #quartz-body（特异性更高、加载更靠后），
+     插件 CSS 是第 6/21 个 stylesheet，同特异性会输 → 这里只能 !important 顶。 */
+  #quartz-body{display:grid!important;grid-template-columns:280px minmax(0,1fr) 264px!important;
+    column-gap:8px!important;row-gap:0!important;padding:0 8px}
+  body[data-kb-fold="1"] #quartz-body{grid-template-columns:46px minmax(0,1fr) 264px!important}
+  body[data-kb-immersive="1"] #quartz-body{grid-template-columns:0 minmax(0,1fr) 0!important;
+    column-gap:0!important;padding:0}
+  body[data-kb-immersive="1"] .left.sidebar,body[data-kb-immersive="1"] .right.sidebar{
+    opacity:0;pointer-events:none}
+  .left.sidebar{padding:.7rem .45rem 1rem .55rem;min-width:0;box-sizing:border-box;overflow:hidden}
+  body[data-kb-fold="1"] .left.sidebar{padding:.7rem 0!important;border-right:none}
+  body[data-kb-fold="1"] .left.sidebar>*{display:none}
+  body[data-kb-fold="1"] .left.sidebar::before{content:"»";display:grid;place-items:center;
+    width:calc(100% - 8px);height:34px;margin:0 4px;border:1px solid var(--gray);border-radius:8px;
+    color:var(--darkgray);font-size:1rem}
+  /* Quartz 桌面端给正文和两侧留了 96px 的顶部偏移（它自己那套"内容离顶"的做法）。
+     现在这条位置被全宽顶栏占了，不抹掉就是正文上方一条 ~100px 的空带。 */
+  .page-header{margin-top:0!important}
+  .left.sidebar,.right.sidebar{padding-top:14px!important}
+  /* 顶栏已经居中放了搜索框，左栏那个内联搜索框要藏掉——但不能 display:none，
+     搜索浮层 .search-container 就住在它里面，父级无盒子浮层会塌成 0×0。
+     挪出视口最安全：浮层是 position:fixed，不受这个偏移牵连。 */
+  .left.sidebar .flex-component .search{position:absolute;left:-9999px}
+  /* 顶栏已经有的控件不再在左栏重复一遍。.search-button 可以藏，
+     但它的祖先 .search / .flex-component 绝不能 display:none——搜索浮层住在里面会塌成 0×0。 */
+  .left.sidebar>.page-title,.flex-component .search-button,.flex-component .darkmode,
+  .flex-component .readermode{display:none!important}
+
+  #kb-deskbar{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:12px;
+    height:52px;padding:0 16px;background:var(--light);border-bottom:1px solid var(--gray)}
+  #kb-deskbar .kb-brand{display:flex;align-items:center;gap:7px;font-size:1.05rem;font-weight:900;
+    letter-spacing:.08em;color:var(--dark);text-decoration:none;white-space:nowrap}
+  #kb-deskbar .kb-brand svg{width:20px;height:20px;fill:none;stroke:var(--secondary);
+    stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+  #kb-deskbar nav{display:flex;gap:2px;flex:none}
+  #kb-deskbar .kb-tn{padding:6px 11px;border:0;border-radius:8px;background:none;color:var(--darkgray);
+    font-family:inherit;font-size:.9rem;letter-spacing:.04em;text-decoration:none;cursor:pointer;
+    transition:color .16s,background .16s}
+  #kb-deskbar .kb-tn:hover{color:var(--dark);background:var(--lightgray)}
+  #kb-deskbar .kb-tn[aria-current="page"]{color:var(--secondary);
+    background:color-mix(in oklab,var(--secondary),transparent 90%)}
+  #kb-deskbar .kb-sep{width:1px;height:20px;background:var(--gray);flex:none}
+  #kb-deskbar .kb-q{flex:1 1 auto;max-width:520px;min-width:170px;display:flex;align-items:center;
+    gap:8px;height:34px;padding:0 10px;border:1px solid var(--gray);border-radius:9px;
+    background:var(--lightgray);color:var(--darkgray);font-family:inherit;font-size:.86rem;
+    text-align:left;cursor:text;transition:border-color .18s}
+  #kb-deskbar .kb-q:hover{border-color:var(--darkgray)}
+  #kb-deskbar .kb-q svg{width:15px;height:15px;flex:none;fill:none;stroke:currentColor;
+    stroke-width:1.9;stroke-linecap:round}
+  #kb-deskbar .kb-q span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  #kb-deskbar .kb-q kbd{border:1px solid var(--gray);border-radius:4px;padding:0 5px;
+    font-family:Consolas,"JetBrains Mono",monospace;font-size:.72rem;color:var(--darkgray);
+    background:var(--light)}
+  #kb-deskbar .kb-right{margin-left:auto;display:flex;gap:6px;flex:none}
+  #kb-deskbar .kb-ib{width:34px;height:34px;display:grid;place-items:center;border:1px solid var(--gray);
+    border-radius:9px;background:var(--light);color:var(--dark);cursor:pointer;
+    transition:background .16s,color .16s,border-color .16s}
+  #kb-deskbar .kb-ib:hover{background:var(--lightgray)}
+  #kb-deskbar .kb-ib svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.7;
+    stroke-linecap:round;stroke-linejoin:round}
+  #kb-deskbar .kb-ib[aria-pressed="true"]{color:var(--secondary);border-color:var(--secondary);
+    background:color-mix(in oklab,var(--secondary),transparent 92%)}
+  #kb-prog{position:absolute;left:0;right:0;bottom:0;height:2px;
+    background:color-mix(in oklab,var(--gray),transparent 45%)}
+  #kb-prog i{display:block;height:100%;background:var(--secondary);transform-origin:0 50%;
+    transform:scaleX(0);transition:transform .12s linear}
+  body[data-kb-immersive="1"] #kb-deskbar{opacity:.4}
+  body[data-kb-immersive="1"] #kb-deskbar:hover{opacity:1}
+
+  #kb-status{position:fixed;left:0;right:0;bottom:0;z-index:45;display:flex;align-items:center;
+    gap:14px;height:24px;padding:0 14px;border-top:1px solid var(--gray);background:var(--light);
+    font-family:Consolas,"JetBrains Mono",monospace;font-size:.68rem;letter-spacing:.05em;
+    color:var(--darkgray)}
+  #kb-status .st-path{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+    color:var(--dark)}
+  #kb-status .st-r{margin-left:auto;white-space:nowrap}
+  #quartz-body{padding-bottom:32px!important}
+
+  #kb-help{position:fixed;top:64px;right:16px;z-index:60;width:286px;padding:14px 16px 15px;
+    border:1px solid var(--gray);border-radius:12px;background:var(--light);
+    box-shadow:0 18px 46px rgba(10,12,15,.16)}
+  #kb-help h4{margin:0 0 10px;font-size:.7rem;letter-spacing:.2em;color:var(--darkgray)}
+  #kb-help dl{display:grid;grid-template-columns:auto 1fr;gap:7px 12px;margin:0;font-size:.85rem}
+  #kb-help dt{margin:0}
+  #kb-help dt kbd{border:1px solid var(--gray);border-bottom-width:2px;border-radius:5px;padding:1px 6px;
+    font-family:Consolas,"JetBrains Mono",monospace;font-size:.76rem;color:var(--dark)}
+  #kb-help dd{margin:0;color:var(--darkgray)}
+}
+`;
+
+
+const deskScript = `
+(function(){
+  var M=window.matchMedia('(min-width:821px)');
+  var SV=" fill='none' stroke='currentColor' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'>";
+  var IC={
+    brand:"<svg viewBox='0 0 24 24'"+SV+"<path d='M12 2.9 20.4 7v10L12 21.1 3.6 17V7z'/><path d='M12 2.9v18.2M3.6 7l8.4 4.1L20.4 7'/></svg>",
+    search:"<svg viewBox='0 0 24 24' stroke-width='1.9'><circle cx='10.8' cy='10.8' r='6.4'/><path d='m15.6 15.6 4.3 4.3'/></svg>",
+    fold:"<svg viewBox='0 0 24 24'><path d='M9.6 5.4 3.8 12l5.8 6.6M13.4 5.6h6.8M13.4 18.4h6.8M13.4 12h6.8'/></svg>",
+    imm:"<svg viewBox='0 0 24 24'><path d='M3.6 8.2V4.4a.8.8 0 0 1 .8-.8h3.8M20.4 8.2V4.4a.8.8 0 0 0-.8-.8h-3.8M3.6 15.8v3.8a.8.8 0 0 0 .8.8h3.8M20.4 15.8v3.8a.8.8 0 0 1-.8.8h-3.8'/></svg>",
+    moon:"<svg viewBox='0 0 24 24' stroke-width='1.7'><path d='M20.4 14.6A8.7 8.7 0 0 1 9.4 3.6a8.8 8.8 0 1 0 11 11z'/></svg>",
+    sun:"<svg viewBox='0 0 24 24' stroke-width='1.7'><circle cx='12' cy='12' r='4.1'/><path d='M12 2.6v2.1M12 19.3v2.1M4.5 4.5l1.5 1.5M18 18l1.5 1.5M2.6 12h2.1M19.3 12h2.1M4.5 19.5 6 18M18 6l1.5-1.5'/></svg>"
+  };
+  var KEYS=[['/','聚焦搜索'],['?','这份快捷键'],['j / k','下一篇 / 上一篇'],['W','沉浸模式'],['Esc','关闭浮层']];
+  function el(t,c,h2){var n=document.createElement(t);if(c)n.className=c;
+    if(h2!==undefined)n.innerHTML=h2;return n}
+  function root(){var b=document.body.getAttribute('data-basepath')||'';
+    while(b.length>0&&b.charAt(b.length-1)==='/')b=b.slice(0,-1);return b+'/'}
+  function q(sel){return document.querySelector(sel)}
+  function openSearch(){
+    var sc=q('.search-container');
+    if(!sc){var x=q('.search-button');if(x)x.click();return}
+    sc.classList.add('active');
+    var i=sc.querySelector('.search-bar');if(i)setTimeout(function(){i.focus()},60)}
+  function closeSearch(){var sc=q('.search-container');if(sc)sc.classList.remove('active')}
+  function treeLinks(){
+    var seen={},out=[];
+    [].slice.call(document.querySelectorAll('.explorer-content a[href]')).forEach(function(a){
+      var h=a.getAttribute('href');
+      if(!/\\.html$/.test(h)||seen[h])return;seen[h]=1;out.push(a)});
+    return out}
+  function step(dir){
+    var list=treeLinks();if(list.length<2)return;
+    var here=location.pathname;var idx=-1;
+    list.forEach(function(a,i){
+      var u=new URL(a.getAttribute('href'),location.href).pathname;
+      if(u===here)idx=i});
+    if(idx<0)return;
+    var n=list[(idx+dir+list.length)%list.length];
+    location.href=n.getAttribute('href')}
+  function toggleAttr(name){var b=document.body;
+    var on=b.getAttribute(name)==='1';
+    if(on)b.removeAttribute(name);else b.setAttribute(name,'1');return !on}
+  function help(open){
+    var box=document.getElementById('kb-help');
+    if(!open){if(box)box.remove();return}
+    if(box)return;
+    box=el('div');box.id='kb-help';box.setAttribute('role','dialog');
+    box.setAttribute('aria-label','快捷键');
+    var dl=el('dl');
+    KEYS.forEach(function(k){dl.appendChild(el('dt',null,'<kbd>'+k[0]+'</kbd>'));
+      dl.appendChild(el('dd',null,k[1]))});
+    box.appendChild(el('h4',null,'键盘'));box.appendChild(dl);
+    document.body.appendChild(box)}
+  function onKey(e){
+    if(!M.matches)return;
+    var t=(e.target&&e.target.tagName)||'';
+    if(t==='INPUT'||t==='TEXTAREA'||e.metaKey||e.ctrlKey||e.altKey)return;
+    var bar=document.getElementById('kb-deskbar');
+    if(e.key==='/'){e.preventDefault();openSearch()}
+    else if(e.key==='?'){e.preventDefault();help(!document.getElementById('kb-help'))}
+    else if(e.key==='Escape'){help(false);closeSearch()}
+    else if(e.key==='w'||e.key==='W'){toggleAttr('data-kb-immersive');if(bar)syncPressed(bar)}
+    else if(e.key==='j'){e.preventDefault();step(1)}
+    else if(e.key==='k'){e.preventDefault();step(-1)}}
+  function syncPressed(bar){
+    var f=bar.querySelector('.kb-fold'),w=bar.querySelector('.kb-imm'),t=bar.querySelector('.kb-theme');
+    if(f)f.setAttribute('aria-pressed',document.body.getAttribute('data-kb-fold')==='1'?'true':'false');
+    if(w)w.setAttribute('aria-pressed',document.body.getAttribute('data-kb-immersive')==='1'?'true':'false');
+    if(t)t.innerHTML=document.body.classList.contains('theme-dark')?IC.sun:IC.moon}
+  function purge(){['kb-deskbar','kb-status','kb-help'].forEach(function(i){
+    var n=document.getElementById(i);if(n)n.remove()})}
+  function build(){
+    purge();
+    document.body.removeAttribute('data-kb-fold');
+    document.body.removeAttribute('data-kb-immersive');
+    if(!M.matches)return;
+    var slug=document.body.getAttribute('data-slug')||'';
+    var r=root();
+    var bar=el('div');bar.id='kb-deskbar';
+    var brand=el('a','kb-brand',IC.brand+'<span>知库</span>');brand.href=r;
+    brand.title='返回总览';
+    var nav=el('nav');nav.setAttribute('aria-label','一级导航');
+    /* 主仓顶栏六项里，收藏/治理/复习/统计/收件箱都依赖写回或后端接口，
+       静态站上没有对应物——按已定口径直接不渲染，不放假入口。 */
+    var n1=el('a','kb-tn','阅读');n1.href=r;if(slug==='index')n1.setAttribute('aria-current','page');
+    var n2=el('a','kb-tn','标签');n2.href=r+'tags/';
+    if(/^tags/.test(slug))n2.setAttribute('aria-current','page');
+    nav.appendChild(n1);nav.appendChild(n2);
+    var sep=el('span','kb-sep');
+    var sb=el('button','kb-q',IC.search+'<span>检索，? 前缀走语义…</span><kbd>/</kbd>');
+    sb.type='button';sb.addEventListener('click',openSearch);
+    var right=el('div','kb-right');
+    var fold=el('button','kb-ib kb-fold',IC.fold);fold.type='button';
+    fold.title='收起 / 展开分类树';fold.addEventListener('click',function(){
+      toggleAttr('data-kb-fold');syncPressed(bar)});
+    var imm=el('button','kb-ib kb-imm',IC.imm);imm.type='button';
+    imm.title='沉浸模式（W）';imm.addEventListener('click',function(){
+      toggleAttr('data-kb-immersive');syncPressed(bar)});
+    var th=el('button','kb-ib kb-theme',IC.moon);th.type='button';th.title='切换白天 / 夜间';
+    th.addEventListener('click',function(){var x=q('.darkmode');if(x)x.click();
+      setTimeout(function(){syncPressed(bar)},0)});
+    right.appendChild(fold);right.appendChild(imm);right.appendChild(th);
+    var prog=el('div');prog.id='kb-prog';prog.innerHTML='<i></i>';
+    bar.appendChild(brand);bar.appendChild(nav);bar.appendChild(sep);
+    bar.appendChild(sb);bar.appendChild(right);bar.appendChild(prog);
+    document.body.insertBefore(bar,document.body.firstChild);
+    var st=el('div');st.id='kb-status';
+    st.innerHTML='<span>知库 · 公开站</span><span class="st-path"></span>'+
+      '<span class="st-r"><span class="st-theme"></span> · ? 快捷键</span>';
+    document.body.appendChild(st);
+    syncStatus();syncPressed(bar);
+    wire();
+  }
+  /* 监听只接一次：SPA 换页不重建 document，闭包里存 DOM 会越攒越多，
+     所以回调一律实时查。 */
+  var wired=false,raf=0;
+  function syncStatus(){var st=document.getElementById('kb-status');if(!st)return;
+    var r=root();var p=location.pathname;if(p.indexOf(r)===0)p=p.slice(r.length);
+    st.querySelector('.st-path').textContent=p||'（首页）';
+    st.querySelector('.st-theme').textContent=
+      document.body.classList.contains('theme-dark')?'夜间':'白天'}
+  function onScroll(){
+    var prog=document.getElementById('kb-prog');if(!prog)return;
+    if(raf)return;raf=requestAnimationFrame(function(){raf=0;
+      var h=document.documentElement.scrollHeight-window.innerHeight;
+      prog.firstChild.style.transform='scaleX('+(h>0?Math.min(1,window.scrollY/h):0)+')';})}
+  function wire(){
+    if(wired)return;wired=true;
+    document.addEventListener('keydown',onKey);
+    window.addEventListener('scroll',onScroll,{passive:true});
+    new MutationObserver(function(){
+      var bar=document.getElementById('kb-deskbar');
+      if(bar)syncPressed(bar);syncStatus()}).observe(document.body,
+      {attributes:true,attributeFilter:['class','data-kb-fold','data-kb-immersive']})}
+  function run(){if(M.matches)build();else purge()}
+  run();
+  document.addEventListener('nav',run);
+  if(M.addEventListener)M.addEventListener('change',run);
+})();
+`;
+
+
 function ZhikuTypographyView() {
   return null
 }
-ZhikuTypographyView.css = css + mobileCss
-ZhikuTypographyView.afterDOMLoaded = script + mobileScript
+ZhikuTypographyView.css = css + mobileCss + deskCss
+ZhikuTypographyView.afterDOMLoaded = script + mobileScript + deskScript
 
 const ZhikuTypography = () => ZhikuTypographyView
 
