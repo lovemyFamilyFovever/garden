@@ -103,7 +103,8 @@ footer ul li a:hover{color:var(--secondary)}
   position:relative}
 .left.sidebar .search>.search-container>.search-space::before{content:"";position:absolute;
   left:11px;top:50%;width:15px;height:15px;margin-top:-7.5px;pointer-events:none;z-index:1;
-  background-color:var(--gray);-webkit-mask:var(--kb-mag) no-repeat center/contain;
+  background-color:var(--darkgray);opacity:.6;
+  -webkit-mask:var(--kb-mag) no-repeat center/contain;
   mask:var(--kb-mag) no-repeat center/contain}
 .left.sidebar .search>.search-container>.search-space>.search-bar{box-sizing:border-box;
   width:100%;height:36px;padding:0 10px 0 34px;border:1px solid var(--gray);border-radius:9px;
@@ -146,9 +147,9 @@ footer ul li a:hover{color:var(--secondary)}
 .left.sidebar .search .result-card>ul.tags>li>p{margin:0;font-size:.72rem;
   color:var(--secondary)}
 .left.sidebar .search>.search-container>.search-space:focus-within::before{
-  background-color:var(--secondary)}
+  background-color:var(--secondary);opacity:.9}
 .left.sidebar .search>.search-container>.search-space>.search-bar::placeholder{
-  color:var(--gray)}
+  color:var(--darkgray);opacity:.6}
 .left.sidebar .search .result-card:hover>.card-title,
 .left.sidebar .search .result-card.focus>.card-title{color:var(--secondary)}
 .left.sidebar .search .result-card.no-match>h3{font-size:.92rem;color:var(--dark)}
@@ -595,9 +596,12 @@ const deskCss = `
     max-height:none!important}
   /* Quartz 默认 320/auto/320，且它的规则是 .page > #quartz-body（特异性更高、加载更靠后），
      插件 CSS 是第 6/21 个 stylesheet，同特异性会输 → 这里只能 !important 顶。 */
-  #quartz-body{display:grid!important;grid-template-columns:280px minmax(0,1fr) 264px!important;
+  /* 第三列写 minmax(0,264px)：右栏有内容时顶到 264px，
+     没内容时（首页既无目录条目也无反链）整列收成 0，不留一片空白 */
+  #quartz-body{display:grid!important;
+    grid-template-columns:280px minmax(0,1fr) minmax(0,264px)!important;
     column-gap:8px!important;row-gap:0!important;padding:0 8px}
-  body[data-kb-fold="1"] #quartz-body{grid-template-columns:46px minmax(0,1fr) 264px!important}
+  body[data-kb-fold="1"] #quartz-body{grid-template-columns:46px minmax(0,1fr) minmax(0,264px)!important}
   body[data-kb-immersive="1"] #quartz-body{grid-template-columns:0 minmax(0,1fr) 0!important;
     column-gap:0!important;padding:0}
   body[data-kb-immersive="1"] .left.sidebar,body[data-kb-immersive="1"] .right.sidebar{
@@ -641,6 +645,8 @@ const deskCss = `
     outline-offset:2px}
   body[data-slug="index"] .markdown-rendered>p:first-of-type{color:var(--darkgray);
     font-size:.93rem;letter-spacing:.02em;margin:.1rem 0 16px}
+  /* 首页是入口页，不需要日期与阅读时长（移动端早已隐藏，这里补齐桌面端） */
+  body[data-slug="index"] .page-header p.content-meta{display:none}
   /* 顶栏已经有的控件不再在左栏重复一遍；搜索按钮由常驻输入框取代。
      .search / .flex-component 是输入框的宿主，绝不能 display:none。 */
   .left.sidebar>.page-title,.flex-component .search-button,.flex-component .darkmode,
