@@ -145,6 +145,21 @@ footer ul li a:hover{color:var(--secondary)}
 .left.sidebar .search .result-card>ul.tags>li{display:inline-block;margin-right:5px}
 .left.sidebar .search .result-card>ul.tags>li>p{margin:0;font-size:.72rem;
   color:var(--secondary)}
+.left.sidebar .search>.search-container>.search-space:focus-within::before{
+  background-color:var(--secondary)}
+.left.sidebar .search>.search-container>.search-space>.search-bar::placeholder{
+  color:var(--gray)}
+.left.sidebar .search .result-card:hover>.card-title,
+.left.sidebar .search .result-card.focus>.card-title{color:var(--secondary)}
+.left.sidebar .search .result-card.no-match>h3{font-size:.92rem;color:var(--dark)}
+.left.sidebar .search .result-card.no-match>p{font-size:.8rem;color:var(--darkgray);
+  margin-top:4px}
+.left.sidebar .search .search-layout{scrollbar-width:thin;
+  scrollbar-color:color-mix(in oklab,var(--gray),transparent 25%) transparent}
+.left.sidebar .search .search-layout::-webkit-scrollbar{width:8px}
+.left.sidebar .search .search-layout::-webkit-scrollbar-thumb{
+  background:color-mix(in oklab,var(--gray),transparent 25%);border-radius:4px;
+  border:2px solid transparent;background-clip:content-box}
 `;
 const mobileCss = `
 /* ================= 移动端壳（V2 底部导航 + V3 抽屉 + V5 纸感 + V6 搜索 + V8 磁贴）
@@ -637,13 +652,6 @@ const deskCss = `
     letter-spacing:.08em;color:var(--dark);text-decoration:none;white-space:nowrap}
   #kb-deskbar .kb-brand svg{width:20px;height:20px;fill:none;stroke:var(--secondary);
     stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
-  #kb-deskbar nav{display:flex;gap:2px;flex:none}
-  #kb-deskbar .kb-tn{padding:6px 11px;border:0;border-radius:8px;background:none;color:var(--darkgray);
-    font-family:inherit;font-size:.9rem;letter-spacing:.04em;text-decoration:none;cursor:pointer;
-    transition:color .16s,background .16s}
-  #kb-deskbar .kb-tn:hover{color:var(--dark);background:var(--lightgray)}
-  #kb-deskbar .kb-tn[aria-current="page"]{color:var(--secondary);
-    background:color-mix(in oklab,var(--secondary),transparent 90%)}
   #kb-deskbar .kb-right{margin-left:auto;display:flex;gap:6px;flex:none}
   #kb-deskbar .kb-ib{width:34px;height:34px;display:grid;place-items:center;border:1px solid var(--gray);
     border-radius:9px;background:var(--light);color:var(--dark);cursor:pointer;
@@ -740,7 +748,7 @@ const deskScript = `
   function toggleAttr(name){var b=document.body;
     var on=b.getAttribute(name)==='1';
     if(on)b.removeAttribute(name);else b.setAttribute(name,'1');return !on}
-  var PANE=[['toc','目录'],['tags','标签'],['backlinks','双链']];
+  var PANE=[['toc','目录'],['backlinks','双链']];
   /* 域色点：hue 的权威是主仓 content/_meta/taxonomy.json，
      publish_site.py 把它导成 static/zhiku-taxonomy.json 随站发布；
      插件运行时读这份**数据**贴到节点上，CSS 里不抄域名清单（不变量 5）。 */
@@ -839,18 +847,10 @@ const deskScript = `
     document.body.removeAttribute('data-kb-fold');
     document.body.removeAttribute('data-kb-immersive');
     if(!M.matches)return;
-    var slug=document.body.getAttribute('data-slug')||'';
     var r=root();
     var bar=el('div');bar.id='kb-deskbar';
     var brand=el('a','kb-brand',IC.brand+'<span>知库</span>');brand.href=r;
     brand.title='返回总览';
-    var nav=el('nav');nav.setAttribute('aria-label','一级导航');
-    /* 主仓顶栏六项里，收藏/治理/复习/统计/收件箱都依赖写回或后端接口，
-       静态站上没有对应物——按已定口径直接不渲染，不放假入口。 */
-    var n1=el('a','kb-tn','阅读');n1.href=r;if(slug==='index')n1.setAttribute('aria-current','page');
-    var n2=el('a','kb-tn','标签');n2.href=r+'tags/';
-    if(/^tags/.test(slug))n2.setAttribute('aria-current','page');
-    nav.appendChild(n1);nav.appendChild(n2);
     var right=el('div','kb-right');
     var fold=el('button','kb-ib kb-fold',IC.fold);fold.type='button';
     fold.title='收起 / 展开分类树';fold.addEventListener('click',function(){
@@ -863,7 +863,7 @@ const deskScript = `
       setTimeout(function(){syncPressed(bar)},0)});
     right.appendChild(fold);right.appendChild(imm);right.appendChild(th);
     var prog=el('div');prog.id='kb-prog';prog.innerHTML='<i></i>';
-    bar.appendChild(brand);bar.appendChild(nav);
+    bar.appendChild(brand);
     bar.appendChild(right);bar.appendChild(prog);
     document.body.insertBefore(bar,document.body.firstChild);
     var st=el('div');st.id='kb-status';

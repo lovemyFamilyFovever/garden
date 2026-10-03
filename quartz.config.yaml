@@ -3,7 +3,7 @@ configuration:
   pageTitle: 知库 · 技术花园
   pageTitleSuffix: " | Zhiku Garden"
   enableSPA: true
-  enablePopovers: true
+  enablePopovers: false  # 用户要求：去掉悬停预览弹窗（目录页会弹 404 卡片）
   locale: zh-CN
   baseUrl: lovemyfamilyfovever.github.io/garden
   ignorePatterns:
@@ -170,7 +170,7 @@ plugins:
       position: beforeBody
       priority: 20
   - source: "@quartz-community/tag-list"
-    enabled: true  # 档2：右栏页签要有「标签」页，主仓右栏四页签里可只读呈现的两项之一
+    enabled: false  # 用户要求：去掉标签功能
     layout:
       position: right
       priority: 40
