@@ -198,14 +198,6 @@ const mobileCss = `
   .kb-btn:active{transform:scale(.92);background:var(--lightgray)}
   .kb-btn svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.7;
     stroke-linecap:round;stroke-linejoin:round}
-  .kb-search{display:flex;align-items:center;gap:9px;width:calc(100% - 24px);min-height:40px;
-    margin:0 12px 9px;padding:0 13px;border:1px solid var(--gray);border-radius:10px;
-    background:var(--lightgray);color:var(--darkgray);font-family:inherit;font-size:.92rem;
-    text-align:left;cursor:pointer;transition:background .18s}
-  .kb-search:active{background:color-mix(in oklab,var(--gray),transparent 30%)}
-  .kb-search svg{width:17px;height:17px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;
-    stroke-linecap:round}
-  .kb-search b{font-weight:400;letter-spacing:.02em}
   .kb-prog{height:2px;background:color-mix(in oklab,var(--gray),transparent 30%);margin-top:-1px}
   .kb-prog i{display:block;height:100%;background:var(--secondary);transform-origin:0 50%;
     transform:scaleX(0);transition:transform .12s linear}
@@ -474,10 +466,6 @@ const mobileScript = `
       if(x)x.click();});
     if(slug!=='index')top.appendChild(back);
     top.appendChild(t);top.appendChild(th);
-    /* 搜索条（V6）：直接点亮 Quartz 的浮层（它的按钮 click 在合成事件下不生效） */
-    var sb=el('button','kb-search',IC.search+'<b>搜索全站 · 标题 / 正文 / 标签</b>');
-    sb.type='button';
-    sb.addEventListener('click',openSearch);
     var prog=el('div','kb-prog','<i></i>');
     /* 底部导航（V2）：本页无章节时不渲染「章节」钮，避免点了空面板 */
     var tabs=el('nav','kb-tabs');tabs.setAttribute('role','tablist');
@@ -525,7 +513,7 @@ const mobileScript = `
     var tb=el('button','kb-btn','切换明暗');tb.type='button';tb.style.width='100%';
     tb.addEventListener('click',function(){var x=document.querySelector('.darkmode');if(x)x.click()});
     readS.appendChild(tb);
-    sh.appendChild(top);sh.appendChild(sb);sh.appendChild(prog);
+    sh.appendChild(top);sh.appendChild(prog);
     var ov=el('div');ov.id='kb-over';
     ov.appendChild(tabs);ov.appendChild(veil);ov.appendChild(tocS);ov.appendChild(readS);
     document.body.insertBefore(sh,document.body.firstChild);
@@ -609,18 +597,6 @@ const deskCss = `
   #kb-deskbar .kb-tn:hover{color:var(--dark);background:var(--lightgray)}
   #kb-deskbar .kb-tn[aria-current="page"]{color:var(--secondary);
     background:color-mix(in oklab,var(--secondary),transparent 90%)}
-  #kb-deskbar .kb-sep{width:1px;height:20px;background:var(--gray);flex:none}
-  #kb-deskbar .kb-q{flex:1 1 auto;max-width:520px;min-width:170px;display:flex;align-items:center;
-    gap:8px;height:34px;padding:0 10px;border:1px solid var(--gray);border-radius:9px;
-    background:var(--lightgray);color:var(--darkgray);font-family:inherit;font-size:.86rem;
-    text-align:left;cursor:text;transition:border-color .18s}
-  #kb-deskbar .kb-q:hover{border-color:var(--darkgray)}
-  #kb-deskbar .kb-q svg{width:15px;height:15px;flex:none;fill:none;stroke:currentColor;
-    stroke-width:1.9;stroke-linecap:round}
-  #kb-deskbar .kb-q span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  #kb-deskbar .kb-q kbd{border:1px solid var(--gray);border-radius:4px;padding:0 5px;
-    font-family:Consolas,"JetBrains Mono",monospace;font-size:.72rem;color:var(--darkgray);
-    background:var(--light)}
   #kb-deskbar .kb-right{margin-left:auto;display:flex;gap:6px;flex:none}
   #kb-deskbar .kb-ib{width:34px;height:34px;display:grid;place-items:center;border:1px solid var(--gray);
     border-radius:9px;background:var(--light);color:var(--dark);cursor:pointer;
@@ -874,9 +850,6 @@ const deskScript = `
     var n2=el('a','kb-tn','标签');n2.href=r+'tags/';
     if(/^tags/.test(slug))n2.setAttribute('aria-current','page');
     nav.appendChild(n1);nav.appendChild(n2);
-    var sep=el('span','kb-sep');
-    var sb=el('button','kb-q',IC.search+'<span>检索，? 前缀走语义…</span><kbd>/</kbd>');
-    sb.type='button';sb.addEventListener('click',openSearch);
     var right=el('div','kb-right');
     var fold=el('button','kb-ib kb-fold',IC.fold);fold.type='button';
     fold.title='收起 / 展开分类树';fold.addEventListener('click',function(){
@@ -889,8 +862,8 @@ const deskScript = `
       setTimeout(function(){syncPressed(bar)},0)});
     right.appendChild(fold);right.appendChild(imm);right.appendChild(th);
     var prog=el('div');prog.id='kb-prog';prog.innerHTML='<i></i>';
-    bar.appendChild(brand);bar.appendChild(nav);bar.appendChild(sep);
-    bar.appendChild(sb);bar.appendChild(right);bar.appendChild(prog);
+    bar.appendChild(brand);bar.appendChild(nav);
+    bar.appendChild(right);bar.appendChild(prog);
     document.body.insertBefore(bar,document.body.firstChild);
     var st=el('div');st.id='kb-status';
     st.innerHTML='<span>知库 · 公开站</span><span class="st-path"></span>'+
