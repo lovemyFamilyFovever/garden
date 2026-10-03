@@ -146,6 +146,8 @@ plugins:
       priority: 10
   - source: "@quartz-community/search"
     enabled: true
+    options:
+      enablePreview: false  # 只要结果列表，不要右侧预览面板：左栏顶部是极简下拉搜索
     layout:
       position: left
       priority: 20

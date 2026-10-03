@@ -87,6 +87,58 @@ footer ul li a:hover{color:var(--secondary)}
   .markdown-rendered .sec-card h2::before{font-size:1.4rem}
   .left.sidebar,.right.sidebar{border:none}
 }
+
+/* ===== 左栏顶部：极简全局搜索（常驻输入框 + 下拉结果）=====
+   原生 search 组件是「按钮 + fixed 全屏浮层」，这里拍平成栏内的常驻输入框：
+   .search-container 改为静态常显，.search-layout 变成输入框正下方的下拉。
+   作用域限定在 .left.sidebar，特异性天然高于原生选择器，无需到处 !important。 */
+.left.sidebar{--kb-mag:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='6.6'/%3E%3Cpath d='m20 20-3.4-3.4'/%3E%3C/svg%3E")}
+.left.sidebar .search{min-width:0;max-width:none;margin:0 0 12px}
+.left.sidebar .search>.search-button{display:none!important}
+.left.sidebar .search>.search-container{display:block!important;position:relative!important;
+  left:auto!important;top:auto!important;width:auto!important;height:auto!important;
+  overflow:visible!important;contain:none!important;z-index:auto!important;
+  background:none!important;backdrop-filter:none!important}
+.left.sidebar .search>.search-container>.search-space{width:100%!important;margin:0!important;
+  position:relative}
+.left.sidebar .search>.search-container>.search-space::before{content:"";position:absolute;
+  left:11px;top:50%;width:15px;height:15px;margin-top:-7.5px;pointer-events:none;z-index:1;
+  background-color:var(--gray);-webkit-mask:var(--kb-mag) no-repeat center/contain;
+  mask:var(--kb-mag) no-repeat center/contain}
+.left.sidebar .search>.search-container>.search-space>.search-bar{box-sizing:border-box;
+  width:100%;height:36px;padding:0 10px 0 34px;border:1px solid var(--gray);border-radius:9px;
+  background:var(--lightgray);color:var(--dark);font-family:inherit;font-size:.88rem;
+  transition:border-color .16s,background-color .16s}
+.left.sidebar .search>.search-container>.search-space>.search-bar:focus{outline:none;
+  border-color:var(--secondary);background:var(--light)}
+.left.sidebar .search>.search-container>.search-space>.ghost-text{padding-left:34px;
+  font-size:.88rem;color:var(--gray)}
+.left.sidebar .search>.search-container>.search-space>.search-layout{position:absolute;left:0;
+  right:0;top:calc(100% + 6px);width:auto;max-height:min(62vh,430px);overflow-y:auto;
+  display:none;border:1px solid var(--gray);border-radius:11px;background:var(--light);
+  box-shadow:0 14px 38px rgba(10,12,15,.16);z-index:80}
+.left.sidebar .search>.search-container>.search-space>.search-layout.display-results{
+  display:block}
+.left.sidebar .search>.search-container>.search-space>.search-layout>*{height:auto!important;
+  width:100%!important;border:0!important;border-radius:0!important}
+.left.sidebar .search .preview-container{display:none!important}
+.left.sidebar .search>.search-container>.search-space>.search-layout>.results-container>.result-card{
+  display:block;box-sizing:border-box;padding:9px 12px;text-decoration:none;color:var(--dark);
+  border-bottom:1px solid color-mix(in oklab,var(--gray),transparent 55%)}
+.left.sidebar .search>.search-container>.search-space>.search-layout>.results-container>.result-card:last-child{
+  border-bottom:0}
+.left.sidebar .search>.search-container>.search-space>.search-layout>.results-container>.result-card:hover,
+.left.sidebar .search>.search-container>.search-space>.search-layout>.results-container>.result-card.focus{
+  background:var(--lightgray)}
+.left.sidebar .search .result-card>.card-title{margin:0;font-size:.9rem;font-weight:600;
+  color:var(--dark);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.left.sidebar .search .result-card>.card-description{margin:3px 0 0;font-size:.78rem;
+  line-height:1.5;color:var(--darkgray);display:-webkit-box;-webkit-line-clamp:2;
+  -webkit-box-orient:vertical;overflow:hidden}
+.left.sidebar .search .result-card>ul.tags{margin:5px 0 0;padding:0;list-style:none}
+.left.sidebar .search .result-card>ul.tags>li{display:inline-block;margin-right:5px}
+.left.sidebar .search .result-card>ul.tags>li>p{margin:0;font-size:.72rem;
+  color:var(--secondary)}
 `;
 const mobileCss = `
 /* ================= 移动端壳（V2 底部导航 + V3 抽屉 + V5 纸感 + V6 搜索 + V8 磁贴）
@@ -218,29 +270,12 @@ const mobileCss = `
     height:2.5px;border-radius:2px;background:var(--secondary);animation:kbSlide .28s cubic-bezier(.2,.9,.2,1)}
   @keyframes kbSlide{from{transform:translateX(-40%) scaleX(.3);opacity:0}to{transform:none;opacity:1}}
 
-  /* --- 搜索浮层：改成全屏面板（桌面端那套"卡片+12vh 悬浮"在手机上不对，全部拍平） --- */
-  .search-container{position:fixed!important;inset:0!important;width:auto!important;height:auto!important;
-    max-width:none;border-radius:0;padding:calc(var(--kb-sh) + 14px) 18px 16px;
-    background:var(--light);animation:kbZoom .26s cubic-bezier(.2,.9,.2,1);z-index:70}
-  .search-container.active{display:block}
-  .search-container>.search-space{width:100%!important;margin:0!important}
-  .search-container>.search-space>:not(.ghost-text):not(.tag-suggestions){background:transparent!important;
-    border-radius:0!important;box-shadow:none!important;margin-bottom:12px!important}
-  @keyframes kbZoom{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:none}}
-  .search-container .search-bar{width:100%;font-family:inherit;font-size:1.15rem;min-height:48px;
-    border:0;border-bottom:2px solid var(--secondary);border-radius:0;background:none;padding:8px 2px;
-    color:var(--dark)}
-  .search-container>.search-space>input{border:0!important;border-bottom:2px solid var(--secondary)!important;
-    border-radius:0!important;background:none!important;box-shadow:none!important;padding:10px 2px!important;
-    font-size:1.15rem!important;color:var(--dark)!important}
-  .search-layout{grid-template-columns:1fr!important;gap:0!important}
-  .search-layout .preview-container{display:none}
-  .search-layout section[role="searchresult"]{overflow-y:auto}
-  .search-layout li>a{display:block;min-height:52px;padding:11px 4px;border-bottom:1px solid
-    color-mix(in oklab,var(--gray),transparent 40%)}
-  .kb-sx{position:absolute;top:calc(var(--kb-sh) + 12px);right:14px;width:34px;height:34px;
-    display:grid;place-items:center;border:1px solid var(--gray);border-radius:9px;
-    background:var(--light);color:var(--dark);font-size:1.1rem;cursor:pointer}
+  /* --- 搜索：移动端左栏就顶在文档流最上面（sticky 顶栏之下），
+     这里只补间距与触控尺寸，外观与桌面端共用全局那套。 --- */
+  .left.sidebar .search{margin:8px 12px 10px}
+  .left.sidebar .search>.search-container>.search-space>.search-bar{height:42px;font-size:.95rem}
+  .left.sidebar .search>.search-container>.search-space>.search-layout{max-height:52vh}
+  .left.sidebar .search .result-card{padding:11px 12px}
 
 
   /* --- V5 纸感排版 --- */
@@ -433,17 +468,6 @@ const mobileScript = `
         b.setAttribute('aria-pressed','true');cb(i);});
       box.appendChild(b);});
     return box}
-  function openSearch(){
-    var sc=document.querySelector('.search-container');
-    if(!sc){var x=document.querySelector('.search-button');if(x)x.click();return}
-    sc.classList.add('active');
-    document.documentElement.classList.add('kb-lock');
-    var i=sc.querySelector('.search-bar');
-    if(i)setTimeout(function(){i.focus()},80);
-    if(!sc.querySelector('.kb-sx')){
-      var c=el('button','kb-sx','\\u00d7');c.type='button';c.setAttribute('aria-label','关闭搜索');
-      c.addEventListener('click',close);sc.appendChild(c);}
-  }
   function purge(){['kb-shell','kb-over'].forEach(function(i){var n=document.getElementById(i);
     if(n)n.remove()})}
   function build(){
@@ -567,10 +591,6 @@ const deskCss = `
      现在这条位置被全宽顶栏占了，不抹掉就是正文上方一条 ~100px 的空带。 */
   .page-header{margin-top:0!important}
   .left.sidebar,.right.sidebar{padding-top:14px!important}
-  /* 顶栏已经居中放了搜索框，左栏那个内联搜索框要藏掉——但不能 display:none，
-     搜索浮层 .search-container 就住在它里面，父级无盒子浮层会塌成 0×0。
-     挪出视口最安全：浮层是 position:fixed，不受这个偏移牵连。 */
-  .left.sidebar .flex-component .search{position:absolute;left:-9999px}
   /* 域色点：颜色公式跟主仓 style.css:116/132 一致（明 oklch 58% .10 / 暗 70% .14），
      hue 由脚本按 taxonomy 数据写在节点的 --dh 上 */
   .explorer-content .folder-title,.explorer-content .nav-file-title{display:flex;
@@ -579,8 +599,8 @@ const deskCss = `
     background:oklch(58% .1 var(--dh,158))}
   body.theme-dark .kb-dh{background:oklch(70% .14 var(--dh,158))}
   body[data-slug="index"] .markdown-rendered>ul>li>a.kb-hued{display:flex;align-items:center;gap:8px}
-  /* 顶栏已经有的控件不再在左栏重复一遍。.search-button 可以藏，
-     但它的祖先 .search / .flex-component 绝不能 display:none——搜索浮层住在里面会塌成 0×0。 */
+  /* 顶栏已经有的控件不再在左栏重复一遍；搜索按钮由常驻输入框取代。
+     .search / .flex-component 是输入框的宿主，绝不能 display:none。 */
   .left.sidebar>.page-title,.flex-component .search-button,.flex-component .darkmode,
   .flex-component .readermode{display:none!important}
 
@@ -634,17 +654,6 @@ const deskCss = `
     border-radius:7px;font-size:.8rem;color:var(--darkgray);text-decoration:none}
   .right.sidebar .tags li a:hover{color:var(--secondary);border-color:var(--secondary)}
 
-  /* 搜索浮层的域筛选条（对齐主仓搜索浮层的范围 chip） */
-  .kb-schips{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 14px}
-  .kb-schip{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;
-    border:1px solid var(--gray);border-radius:999px;background:var(--light);color:var(--darkgray);
-    font-family:inherit;font-size:.8rem;letter-spacing:.03em;cursor:pointer;
-    transition:color .16s,border-color .16s,background .16s}
-  .kb-schip:hover{color:var(--dark)}
-  .kb-schip[aria-pressed="true"]{color:var(--secondary);border-color:var(--secondary);
-    background:color-mix(in oklab,var(--secondary),transparent 92%)}
-  .search-container .result-card[hidden]{display:none}
-
   #kb-status{position:fixed;left:0;right:0;bottom:0;z-index:45;display:flex;align-items:center;
     gap:14px;height:24px;padding:0 14px;border-top:1px solid var(--gray);background:var(--light);
     font-family:Consolas,"JetBrains Mono",monospace;font-size:.68rem;letter-spacing:.05em;
@@ -685,13 +694,7 @@ const deskScript = `
   function root(){var b=document.body.getAttribute('data-basepath')||'';
     while(b.length>0&&b.charAt(b.length-1)==='/')b=b.slice(0,-1);return b+'/'}
   function q(sel){return document.querySelector(sel)}
-  function openSearch(){
-    var sc=q('.search-container');
-    if(!sc){var x=q('.search-button');if(x)x.click();return}
-    sc.classList.add('active');
-    chips();
-    var i=sc.querySelector('.search-bar');if(i)setTimeout(function(){i.focus()},60)}
-  function closeSearch(){var sc=q('.search-container');if(sc)sc.classList.remove('active')}
+  function openSearch(){var i=q('.search-bar');if(i)i.focus()}
   function treeLinks(){
     var seen={},out=[];
     [].slice.call(document.querySelectorAll('.explorer-content a[href]')).forEach(function(a){
@@ -715,7 +718,6 @@ const deskScript = `
      publish_site.py 把它导成 static/zhiku-taxonomy.json 随站发布；
      插件运行时读这份**数据**贴到节点上，CSS 里不抄域名清单（不变量 5）。 */
   var HUES=undefined;
-  var DOMAINS=[],segSel='*';
   function segOf(href){
     var u;try{u=new URL(href,location.href).pathname}catch(e){return ''}
     var r=root();if(u.indexOf(r)===0)u=u.slice(r.length);
@@ -727,14 +729,12 @@ const deskScript = `
     holder.insertBefore(el('i','kb-dh'),holder.firstChild)}
   function paintHues(){
     if(!HUES)return;
-    DOMAINS=[];
     [].slice.call(document.querySelectorAll('.explorer-content>ul>li')).forEach(function(li){
       if(li.classList.contains('overflow-end'))return;
       var a=li.querySelector('a[href]');if(!a)return;
       var seg=segOf(a.getAttribute('href'));
       var h=HUES[seg];
       var t=li.querySelector('.folder-title')||li.querySelector('.nav-file-title');
-      if(seg)DOMAINS.push({seg:seg,label:(t&&t.textContent.trim())||seg,hue:h===undefined?'':h});
       if(li.dataset.kbHue)return;
       if(h===undefined)return;
       li.dataset.kbHue=h;li.style.setProperty('--dh',h);
@@ -751,32 +751,6 @@ const deskScript = `
     fetch(root()+'static/zhiku-taxonomy.json').then(function(r){
       return r.ok?r.json():{}}).then(function(j){HUES=j;paintHues()})
       .catch(function(){HUES={}})}
-  /* 搜索的域筛选：FlexSearch 的结果卡片 id 就是 slug，按第一段过滤即可，
-     不需要为每个域预生成子索引。域名与色相都来自已渲染的分类树，不抄清单。 */
-  function chips(){
-    var sc=q('.search-container');if(!sc)return;
-    var layout=sc.querySelector('.search-layout'),space=sc.querySelector('.search-space');
-    if(!layout||!space)return;
-    if(!DOMAINS.length)paintHues();
-    var row=sc.querySelector('.kb-schips');
-    if(!row){row=el('div','kb-schips');space.insertBefore(row,layout)}
-    if(!row.childElementCount){
-      var mk=function(seg,label,hue){
-        var b=el('button','kb-schip');b.type='button';b.dataset.seg=seg;
-        if(hue!==''){b.style.setProperty('--dh',hue);b.appendChild(el('i','kb-dh'))}
-        b.appendChild(document.createTextNode(label));
-        b.addEventListener('click',function(){segSel=seg;paintChips();filterHits()});
-        row.appendChild(b)};
-      mk('*','全部','');
-      DOMAINS.forEach(function(d){mk(d.seg,d.label,d.hue)})}
-    paintChips();filterHits()}
-  function paintChips(){[].slice.call(document.querySelectorAll('.kb-schip')).forEach(function(b){
-    b.setAttribute('aria-pressed',b.dataset.seg===segSel?'true':'false')})}
-  function filterHits(){
-    var sc=q('.search-container');if(!sc)return;
-    [].slice.call(sc.querySelectorAll('.result-card')).forEach(function(c){
-      var seg=String(c.id||'').split('/')[0];
-      c.hidden=(segSel!=='*'&&seg!==segSel)})}
   function tabsify(){
     var rail=q('.right.sidebar');if(!rail)return;
     /* build() 会跑两次（首次加载 + Quartz 的 nav 事件），页签条住在右栏里、
@@ -822,7 +796,7 @@ const deskScript = `
     var bar=document.getElementById('kb-deskbar');
     if(e.key==='/'){e.preventDefault();openSearch()}
     else if(e.key==='?'){e.preventDefault();help(!document.getElementById('kb-help'))}
-    else if(e.key==='Escape'){help(false);closeSearch()}
+    else if(e.key==='Escape'){help(false)}
     else if(e.key==='w'||e.key==='W'){toggleAttr('data-kb-immersive');if(bar)syncPressed(bar)}
     else if(e.key==='j'){e.preventDefault();step(1)}
     else if(e.key==='k'){e.preventDefault();step(-1)}}
@@ -897,9 +871,7 @@ const deskScript = `
       var bar=document.getElementById('kb-deskbar');
       if(bar)syncPressed(bar);syncStatus()}).observe(document.body,
       {attributes:true,attributeFilter:['class','data-kb-fold','data-kb-immersive']});
-    /* 结果卡片是 FlexSearch 异步塞进 .search-layout 的，渲染完再套一次当前筛选 */
-    var lay=document.querySelector('.search-layout');
-    if(lay)new MutationObserver(filterHits).observe(lay,{childList:true,subtree:true})}
+  }
   function run(){if(M.matches)build();else purge()}
   run();
   document.addEventListener('nav',run);
