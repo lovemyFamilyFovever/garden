@@ -109,16 +109,19 @@ footer ul li a:hover{color:var(--secondary)}
   width:100%;height:36px;padding:0 10px 0 34px;border:1px solid var(--gray);border-radius:9px;
   background:var(--lightgray);color:var(--dark);font-family:inherit;font-size:.88rem;
   transition:border-color .16s,background-color .16s}
+.left.sidebar .search>.search-container>.search-space>.search-bar:hover{border-color:var(--darkgray)}
 .left.sidebar .search>.search-container>.search-space>.search-bar:focus{outline:none;
-  border-color:var(--secondary);background:var(--light)}
+  border-color:var(--secondary);background:var(--light);
+  box-shadow:0 0 0 3px color-mix(in oklab,var(--secondary),transparent 90%)}
 .left.sidebar .search>.search-container>.search-space>.ghost-text{padding-left:34px;
   font-size:.88rem;color:var(--gray)}
 .left.sidebar .search>.search-container>.search-space>.search-layout{position:absolute;left:0;
   right:0;top:calc(100% + 6px);width:auto;max-height:min(62vh,430px);overflow-y:auto;
-  display:none;border:1px solid var(--gray);border-radius:11px;background:var(--light);
-  box-shadow:0 14px 38px rgba(10,12,15,.16);z-index:80}
+  overscroll-behavior:contain;display:none;border:1px solid var(--gray);border-radius:12px;
+  background:var(--light);box-shadow:0 16px 40px rgba(10,12,15,.16);z-index:80}
 .left.sidebar .search>.search-container>.search-space>.search-layout.display-results{
-  display:block}
+  display:block;animation:kbDrop .16s cubic-bezier(.2,.9,.2,1)}
+@keyframes kbDrop{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
 .left.sidebar .search>.search-container>.search-space>.search-layout>*{height:auto!important;
   width:100%!important;border:0!important;border-radius:0!important}
 .left.sidebar .search .preview-container{display:none!important}
@@ -129,7 +132,10 @@ footer ul li a:hover{color:var(--secondary)}
   border-bottom:0}
 .left.sidebar .search>.search-container>.search-space>.search-layout>.results-container>.result-card:hover,
 .left.sidebar .search>.search-container>.search-space>.search-layout>.results-container>.result-card.focus{
-  background:var(--lightgray)}
+  background:var(--lightgray);box-shadow:inset 2px 0 0 var(--secondary)}
+.left.sidebar .search .search-layout .highlight{background:color-mix(in oklab,var(--tertiary),
+  transparent 72%);color:inherit;border-radius:3px;padding:0 1px}
+.left.sidebar .search .result-card.no-match{text-align:center;padding:20px 12px;border-bottom:0}
 .left.sidebar .search .result-card>.card-title{margin:0;font-size:.9rem;font-weight:600;
   color:var(--dark);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .left.sidebar .search .result-card>.card-description{margin:3px 0 0;font-size:.78rem;
@@ -598,7 +604,28 @@ const deskCss = `
   .kb-dh{width:8px;height:8px;border-radius:50%;flex:none;display:inline-block;
     background:oklch(58% .1 var(--dh,158))}
   body.theme-dark .kb-dh{background:oklch(70% .14 var(--dh,158))}
-  body[data-slug="index"] .markdown-rendered>ul>li>a.kb-hued{display:flex;align-items:center;gap:8px}
+  /* 首页主题磁贴（桌面版；≤820px 那套在 mobileCss 里）。
+     原生 a.internal 会给内部链接铺一层 --highlight 粉底，这里整体接管成卡片网格。 */
+  body[data-slug="index"] .markdown-rendered>ul{list-style:none;margin:0;padding:0;
+    display:grid;grid-template-columns:repeat(auto-fill,minmax(232px,1fr));gap:12px}
+  body[data-slug="index"] .markdown-rendered>ul>li{display:block}
+  body[data-slug="index"] .markdown-rendered>ul>li>a{display:flex;align-items:center;gap:9px;
+    min-height:60px;padding:0 16px;border:1px solid var(--gray);border-radius:13px;
+    background:var(--light);color:var(--dark);text-decoration:none;
+    font-size:1.02rem;font-weight:700;letter-spacing:.02em;
+    transition:transform .18s,border-color .18s,box-shadow .18s}
+  body[data-slug="index"] .markdown-rendered>ul>li>a::after{content:"›";margin-left:auto;
+    font-size:1.3rem;line-height:1;font-weight:400;color:var(--darkgray);
+    transition:color .18s,transform .18s}
+  body[data-slug="index"] .markdown-rendered>ul>li>a:hover{transform:translateY(-2px);
+    border-color:var(--secondary);box-shadow:0 10px 24px rgba(10,12,15,.09)}
+  body[data-slug="index"] .markdown-rendered>ul>li>a:hover::after{color:var(--secondary);
+    transform:translateX(2px)}
+  body[data-slug="index"] .markdown-rendered>ul>li>a:active{transform:translateY(0) scale(.99)}
+  body[data-slug="index"] .markdown-rendered>ul>li>a:focus-visible{outline:2px solid var(--secondary);
+    outline-offset:2px}
+  body[data-slug="index"] .markdown-rendered>p:first-of-type{color:var(--darkgray);
+    font-size:.93rem;letter-spacing:.02em;margin:.1rem 0 16px}
   /* 顶栏已经有的控件不再在左栏重复一遍；搜索按钮由常驻输入框取代。
      .search / .flex-component 是输入框的宿主，绝不能 display:none。 */
   .left.sidebar>.page-title,.flex-component .search-button,.flex-component .darkmode,
@@ -744,7 +771,7 @@ const deskScript = `
       if(a.dataset.kbHue)return;
       var h=HUES[segOf(a.getAttribute('href'))];
       if(h===undefined)return;
-      a.dataset.kbHue=h;a.style.setProperty('--dh',h);a.classList.add('kb-hued');
+      a.dataset.kbHue=h;a.style.setProperty('--dh',h);
       dot(a)})}
   function loadHues(){
     if(HUES){paintHues();return}
